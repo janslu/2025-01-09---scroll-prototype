@@ -16,7 +16,7 @@ body {
 /* Header styles */
 header {
     padding: 10px 2rem;
-    max-width: 1200px;
+    max-width: 1440px;
     margin: 0 auto;
     text-align: center;
     position: -webkit-sticky;
@@ -50,12 +50,40 @@ header h1 {
 main {
     position: relative;
     background-color: #fff;
-    max-width: 1200px;
+    max-width: 1440px;
     margin: 0 auto;
 }
 
-main > .content {
+.content {
+    max-width: 800px;
     margin-bottom: 1rem;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 8rem 4rem;
+}
+
+.content .flex {
+   display: flex;
+   justify-content: center;
+   margin: 2rem 0;
+}
+
+.flex .map {
+   flex: 1 1 0;
+   background-color: #eee;
+   padding: 6rem 1rem;
+   display: flex;
+}
+
+.flex .text {
+   flex: 1 1 0;
+   padding: 6rem 1rem;
+   background-color: #c2d0f1;
+}
+
+.content svg {
+   width: 100%;
+   height: auto;
 }
 
 /* Scroll container */
@@ -83,17 +111,18 @@ main > .content {
 .image-container {
     position: relative;
     width: 100%;
-    aspect-ratio: 8/5;
+    aspect-ratio: 144/81;
     height: 100%;
     padding: 0;
     margin: 0;
+    overflow: hidden;
 }
 
 .image-container img {
     width: 100%;
     height: auto;
     display: block;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    aspect-ratio: 144/81;
 }
 
 /* Caption styles */
@@ -107,6 +136,8 @@ main > .content {
     opacity: 0;
     font-size: 0.875rem;
     pointer-events: none;
+    line-height: 1.7;
+    letter-spacing: 0.015em;
 }
 
 @media (max-width: 768px) {
@@ -117,24 +148,13 @@ main > .content {
 }
 
 /* Caption positioning based on data attributes */
-[data-caption-position="top-left"] .caption {
-    top: 1.5rem;
+[data-caption-position="left"] .caption {
+    top: 50%;
     left: 1.5rem;
 }
 
-[data-caption-position="top-right"] .caption {
-    top: 1.5rem;
-    right: 1.5rem;
-    text-align: right;
-}
-
-[data-caption-position="bottom-left"] .caption {
-    bottom: 1.5rem;
-    left: 1.5rem;
-}
-
-[data-caption-position="bottom-right"] .caption {
-    bottom: 1.5rem;
+[data-caption-position="right"] .caption {
+    top: 50%;
     right: 1.5rem;
     text-align: right;
 }

@@ -7,9 +7,11 @@ window.addEventListener('load', () => {
     // Set initial states
     scrollItems.forEach((item, i) => {
         gsap.set(item, { opacity: i === 0 ? 1 : 0 });
-        gsap.set(item.querySelector('.caption'), {
+        const caption = item.querySelector('.caption');
+        const imageHalfHeight = item.offsetHeight / 2;
+        gsap.set(caption, {
             opacity: 0,
-            y: 50
+            y: imageHalfHeight  // Start at bottom of centered image
         });
     });
 
@@ -18,68 +20,68 @@ window.addEventListener('load', () => {
         scrollTrigger: {
             trigger: container,
             start: "center center",
-            end: () => `+=${(scrollItems.length) * 100 * 30}vh`,
+            end: () => `+=${(scrollItems.length) * 100 * 8}vh`,
             pin: true,
-            scrub: 6,
-            markers: false
+            scrub: 1,
+            // markers: true
         }
     });
 
-    // Each section duration
-    const sectionDuration = 15;
+    // Each section duration and timing
+    const sectionDuration = 10;
     const crossfadeDuration = 3;
-    const captionDelay = 1;
-    const captionFadeDuration = 2;
 
     // Add animations to timeline
     scrollItems.forEach((item, index) => {
-        const isLast = index === scrollItems.length - 1;
         const nextItem = scrollItems[index + 1];
         const caption = item.querySelector('.caption');
         const startTime = index * sectionDuration;
+        const imageHalfHeight = item.offsetHeight / 2;
 
-        if (index === 0) {
-            // First caption animation only
-            tl.to(caption, {
-                opacity: 1,
-                y: 0,
-                duration: captionFadeDuration,
-                ease: "power2.out"
-            }, startTime + captionDelay);
-        } else {
-            // Fade in current item (starts during previous item's fade out)
-            tl.to(item, {
-                opacity: 1,
-                duration: crossfadeDuration
-            }, startTime - crossfadeDuration);
+        // Calculate positions relative to center
+        const startY = imageHalfHeight;  // Bottom of centered image
+        const endY = -imageHalfHeight;   // Top of centered image
 
-            // Animate caption
-            tl.to(caption, {
-                opacity: 1,
-                y: 0,
-                duration: captionFadeDuration,
-                ease: "power2.out"
-            }, startTime + captionDelay);
-        }
+        // Create a timeline for this caption's movement and fades
+        const captionTl = gsap.timeline();
 
+        // Movement from bottom to top
+        captionTl.fromTo(caption,
+            { y: startY, opacity: 0 },
+            {
+                y: endY,
+                duration: sectionDuration - crossfadeDuration,
+                ease: "none"
+            }
+        );
+
+        // Fade in at bottom (starting a bit later)
+        captionTl.to(caption, {
+            opacity: 1,
+            duration: sectionDuration * 0.1,
+            ease: "none"
+        }, sectionDuration * 0.10);  // Start fade in after 5% of the duration
+
+        // Fade out at top (starting earlier)
+        captionTl.to(caption, {
+            opacity: 0,
+            duration: sectionDuration * 0.1,
+            ease: "none"
+        }, (sectionDuration - crossfadeDuration) * 0.8);  // Start fade out at 75% of the movement
+
+        // Add caption timeline to main timeline
+        tl.add(captionTl, startTime);
+
+        // Image crossfade
         if (nextItem) {
-            // Fade out caption before the crossfade (only for non-last items)
-            tl.to(caption, {
-                opacity: 0,
-                duration: captionFadeDuration
-            }, startTime + sectionDuration - crossfadeDuration - captionFadeDuration);
-
-            // Fade out current item
             tl.to(item, {
                 opacity: 0,
+                duration: crossfadeDuration
+            }, startTime + sectionDuration - crossfadeDuration)
+            .to(nextItem, {
+                opacity: 1,
                 duration: crossfadeDuration
             }, startTime + sectionDuration - crossfadeDuration);
-        } else if (isLast) {
-            // For the last item, only fade out the image, keep caption visible
-            tl.to(item, {
-                opacity: 0,
-                duration: crossfadeDuration
-            }, startTime + sectionDuration + crossfadeDuration);
         }
     });
 });
