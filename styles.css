@@ -49,13 +49,13 @@ header h1 {
 /* Main content */
 main {
     position: relative;
+    background-color: #fff;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
 main > .content {
     margin-bottom: 1rem;
-    padding: 0 2rem;
-    max-width: 1200px;
-    margin: 0 auto;
 }
 
 /* Scroll container */
@@ -82,8 +82,7 @@ main > .content {
 /* Image container styles */
 .image-container {
     position: relative;
-    width: calc(100% - 4rem);
-    max-width: calc(1200px - 4rem);
+    width: 100%;
     aspect-ratio: 8/5;
     height: 100%;
     padding: 0;
@@ -100,36 +99,43 @@ main > .content {
 /* Caption styles */
 .caption {
     position: absolute;
-    background-color: rgba(255, 255, 255, 0.8);
+    background-color: rgb(255 255 255);
     color: black;
     padding: 0.75rem 1rem;
-    border-radius: 4px;
     max-width: 40%;
     font-size: 0.9rem;
     opacity: 0;
+    font-size: 0.875rem;
     pointer-events: none;
+}
+
+@media (max-width: 768px) {
+    .caption {
+        max-width: 80%;
+        font-size: 0.8rem;
+    }
 }
 
 /* Caption positioning based on data attributes */
 [data-caption-position="top-left"] .caption {
-    top: 1rem;
-    left: 1rem;
+    top: 1.5rem;
+    left: 1.5rem;
 }
 
 [data-caption-position="top-right"] .caption {
-    top: 1rem;
-    right: 1rem;
+    top: 1.5rem;
+    right: 1.5rem;
     text-align: right;
 }
 
 [data-caption-position="bottom-left"] .caption {
-    bottom: 1rem;
-    left: 1rem;
+    bottom: 1.5rem;
+    left: 1.5rem;
 }
 
 [data-caption-position="bottom-right"] .caption {
-    bottom: 1rem;
-    right: 1rem;
+    bottom: 1.5rem;
+    right: 1.5rem;
     text-align: right;
 }
 
