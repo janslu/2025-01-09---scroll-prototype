@@ -40,8 +40,8 @@ window.addEventListener('load', () => {
         const captionHeight = caption.offsetHeight / 2; // Half of caption height to account for transform
 
         // Calculate positions relative to center
-        const startY = imageHalfHeight;  // Bottom of centered image
-        const endY = -imageHalfHeight + captionHeight;   // Top of centered image, adjusted for caption center point
+        const startY = imageHalfHeight - (2 * captionHeight);  // Bottom of centered image
+        const endY = -imageHalfHeight;   // Top of centered image, adjusted for caption center point
 
         // Create a timeline for this caption's movement and fades
         const captionTl = gsap.timeline();
