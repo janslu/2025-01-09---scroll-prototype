@@ -37,10 +37,11 @@ window.addEventListener('load', () => {
         const caption = item.querySelector('.caption');
         const startTime = index * sectionDuration;
         const imageHalfHeight = item.offsetHeight / 2;
+        const captionHeight = caption.offsetHeight / 2; // Half of caption height to account for transform
 
         // Calculate positions relative to center
         const startY = imageHalfHeight;  // Bottom of centered image
-        const endY = -imageHalfHeight;   // Top of centered image
+        const endY = -imageHalfHeight + captionHeight;   // Top of centered image, adjusted for caption center point
 
         // Create a timeline for this caption's movement and fades
         const captionTl = gsap.timeline();
@@ -62,17 +63,17 @@ window.addEventListener('load', () => {
             ease: "none"
         }, sectionDuration * 0.10);  // Start fade in after 5% of the duration
 
-        // Fade out at top (starting earlier)
+        // Fade out at top (only when reaching the top position)
         captionTl.to(caption, {
             opacity: 0,
-            duration: sectionDuration * 0.1,
+            duration: crossfadeDuration,
             ease: "none"
-        }, (sectionDuration - crossfadeDuration) * 0.8);  // Start fade out at 75% of the movement
+        }, sectionDuration - crossfadeDuration);
 
         // Add caption timeline to main timeline
         tl.add(captionTl, startTime);
 
-        // Image crossfade
+        // Image crossfade - synchronized with caption fade out
         if (nextItem) {
             tl.to(item, {
                 opacity: 0,
