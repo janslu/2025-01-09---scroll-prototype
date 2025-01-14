@@ -5,6 +5,10 @@
     box-sizing: border-box;
 }
 
+:root {
+    --slide-aspect-ratio: 5/3;  /* Can be easily changed to other ratios like 16/9, 4/3, etc. */
+}
+
 /* General styles */
 body {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
@@ -91,7 +95,7 @@ main {
 .scroll-container {
     position: relative;
     width: 100%;
-    height: 60vh;
+    aspect-ratio: var(--slide-aspect-ratio);
     overflow: hidden;
 }
 
@@ -113,17 +117,12 @@ main {
     position: relative;
     width: 100%;
     height: 100%;
-    aspect-ratio: 5/3;
-    padding: 0;
-    margin: 0;
     overflow: hidden;
 }
 
 .image-container img {
     width: 100%;
     height: 100%;
-    display: block;
-    aspect-ratio: 5/3;
     object-fit: cover;
 }
 
