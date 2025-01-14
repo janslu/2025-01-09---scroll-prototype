@@ -4,85 +4,99 @@ window.addEventListener('load', () => {
     const scrollItems = gsap.utils.toArray('.scroll-item');
     const container = document.querySelector('.scroll-container');
 
-    // Set initial states
+    // Distance from edges where captions start and end their movement
+    const verticalOffset = 32;
+
+    // Initialize each slide and its caption
+    // First slide starts visible, others are hidden
+    // All captions start hidden and positioned verticalOffset pixels from bottom
     scrollItems.forEach((item, i) => {
         gsap.set(item, { opacity: i === 0 ? 1 : 0 });
         const caption = item.querySelector('.caption');
-        const imageHalfHeight = item.offsetHeight / 2;
+        const imageHeight = item.offsetHeight;
         gsap.set(caption, {
             opacity: 0,
-            y: imageHalfHeight  // Start at bottom of centered image
+            y: (imageHeight / 2) - caption.offsetHeight - verticalOffset
         });
     });
 
-    // Create main timeline
+    // Main scrolling timeline
+    // Pins the container and creates a scrolling animation sequence
+    // Total scroll length is proportional to number of slides
     const tl = gsap.timeline({
         scrollTrigger: {
             trigger: container,
             start: "center center",
-            end: () => `+=${(scrollItems.length) * 100 * 8}vh`,
+            end: () => `+=${(scrollItems.length) * 100 * 6}vh`,
             pin: true,
             scrub: 1,
-            // markers: true
+            // markers: true  // Uncomment to see ScrollTrigger markers for debugging
         }
     });
 
-    // Each section duration and timing
-    const sectionDuration = 10;
-    const crossfadeDuration = 3;
+    // Animation timing constants
+    const sectionDuration = 10;     // Total duration for each slide
+    const crossfadeDuration = 3;    // Duration of fade in/out transitions
 
-    // Add animations to timeline
+    // Create animations for each slide
     scrollItems.forEach((item, index) => {
         const nextItem = scrollItems[index + 1];
         const caption = item.querySelector('.caption');
         const startTime = index * sectionDuration;
-        const imageHalfHeight = item.offsetHeight / 2;
-        const captionHeight = caption.offsetHeight / 2; // Half of caption height to account for transform
+        const imageHeight = item.offsetHeight;
+        const nextCaption = nextItem?.querySelector('.caption');
 
-        // Calculate positions relative to center
-        const startY = imageHalfHeight - (2 * captionHeight);  // Bottom of centered image
-        const endY = -imageHalfHeight;   // Top of centered image, adjusted for caption center point
+        // Final position for caption (verticalOffset pixels from top)
+        const endY = (-imageHeight / 2) + verticalOffset;
 
-        // Create a timeline for this caption's movement and fades
-        const captionTl = gsap.timeline();
-
-        // Movement from bottom to top
-        captionTl.fromTo(caption,
-            { y: startY, opacity: 0 },
-            {
-                y: endY,
-                duration: sectionDuration - crossfadeDuration,
-                ease: "none"
-            }
-        );
-
-        // Fade in at bottom (starting a bit later)
-        captionTl.to(caption, {
-            opacity: 1,
-            duration: sectionDuration * 0.1,
-            ease: "none"
-        }, sectionDuration * 0.10);  // Start fade in after 5% of the duration
-
-        // Fade out at top (only when reaching the top position)
-        captionTl.to(caption, {
-            opacity: 0,
-            duration: crossfadeDuration,
-            ease: "none"
-        }, sectionDuration - crossfadeDuration);
-
-        // Add caption timeline to main timeline
-        tl.add(captionTl, startTime);
-
-        // Image crossfade - synchronized with caption fade out
-        if (nextItem) {
-            tl.to(item, {
-                opacity: 0,
-                duration: crossfadeDuration
-            }, startTime + sectionDuration - crossfadeDuration)
-            .to(nextItem, {
+        // Animation sequence for the first slide:
+        // 1. Caption fades in
+        // 2. Caption moves up
+        // 3. Caption and image fade out (handled in next iteration)
+        if (index === 0) {
+            tl.to(caption, {
                 opacity: 1,
-                duration: crossfadeDuration
-            }, startTime + sectionDuration - crossfadeDuration);
+                duration: crossfadeDuration,
+                ease: "power1.inOut"
+            }, startTime)
+            .to(caption, {
+                y: endY,
+                duration: sectionDuration - (2 * crossfadeDuration),
+                ease: "power1.inOut"
+            }, startTime + crossfadeDuration);
+        }
+
+        // Animation sequence for subsequent slides:
+        // 1. Previous slide and its caption fade out
+        // 2. Current slide and its caption fade in simultaneously
+        // 3. Caption moves up while staying fully visible
+        // 4. At the end, both fade out (handled in next iteration)
+        if (nextItem) {
+            // Calculate when this slide should start transitioning to the next
+            const transitionTime = startTime + sectionDuration - crossfadeDuration;
+
+            // Fade out current slide and its caption
+            tl.to([item, caption], {
+                opacity: 0,
+                duration: crossfadeDuration,
+                ease: "power1.inOut"
+            }, transitionTime);
+
+            // Simultaneously fade in next slide and its caption
+            tl.to([nextItem, nextCaption], {
+                opacity: 1,
+                duration: crossfadeDuration,
+                ease: "power1.inOut"
+            }, transitionTime);
+
+            // Move the caption up after it's fully visible
+            if (nextCaption) {
+                tl.to(nextCaption, {
+                    y: endY,
+                    duration: sectionDuration - (2 * crossfadeDuration),
+                    ease: "power1.inOut"
+                }, transitionTime + crossfadeDuration);
+            }
         }
     });
 });
