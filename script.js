@@ -7,96 +7,169 @@ window.addEventListener('load', () => {
     // Distance from edges where captions start and end their movement
     const verticalOffset = 32;
 
-    // Initialize each slide and its caption
-    // First slide starts visible, others are hidden
-    // All captions start hidden and positioned verticalOffset pixels from bottom
+    // Initialize each slide and its texts
     scrollItems.forEach((item, i) => {
         gsap.set(item, { opacity: i === 0 ? 1 : 0 });
-        const caption = item.querySelector('.textbox');
-        const imageHeight = item.offsetHeight;
-        gsap.set(caption, {
-            opacity: 0,
-            y: (imageHeight / 2) - caption.offsetHeight - verticalOffset
-        });
-    });
 
-    // Main scrolling timeline
-    // Pins the container and creates a scrolling animation sequence
-    // Total scroll length is proportional to number of slides
-    const tl = gsap.timeline({
-        scrollTrigger: {
-            trigger: container,
-            start: "center center",
-            end: () => `+=${(scrollItems.length) * 100 * 6}vh`,
-            pin: true,
-            scrub: 1,
-            // markers: true  // Uncomment to see ScrollTrigger markers for debugging
+        const caption = item.querySelector('.caption.textbox');
+        const source = item.querySelector('.source.textbox');
+        const imageHeight = item.offsetHeight;
+
+        // Calculate positions
+        const startY = (imageHeight / 2) - (caption?.offsetHeight || 0) - verticalOffset;
+        const endY = (-imageHeight / 2) + verticalOffset;
+
+        // Initialize caption
+        if (caption) {
+            gsap.set(caption, {
+                opacity: 0,
+                y: startY
+            });
+        }
+
+        // Initialize source (if exists) - position it at the same final position as caption
+        if (source) {
+            gsap.set(source, {
+                opacity: 0,
+                y: endY
+            });
         }
     });
 
     // Animation timing constants
-    const sectionDuration = 10;     // Total duration for each slide
-    const crossfadeDuration = 3;    // Duration of fade in/out transitions
+    const baseSectionDuration = 10;     // Base duration for each slide
+    const crossfadeDuration = 3;        // Duration of fade in/out transitions
+    const sourceDuration = 5;           // How long source text stays visible
+    const pauseBeforeSource = 1;        // Duration to pause before showing source
+    const lastSlideExtraDuration = 3;   // Extra time for the last slide's source
+
+    // Calculate total timeline length considering additional time for slides with sources
+    const totalDuration = scrollItems.reduce((total, item, index) => {
+        const hasSource = item.querySelector('.source.textbox') !== null;
+        const isLastSlide = index === scrollItems.length - 1;
+        const slideDuration = hasSource ? baseSectionDuration + sourceDuration : baseSectionDuration;
+        // Add extra time if it's the last slide with source
+        return total + slideDuration + (isLastSlide && hasSource ? lastSlideExtraDuration : 0);
+    }, 0);
+
+    // Main scrolling timeline
+    const tl = gsap.timeline({
+        scrollTrigger: {
+            trigger: container,
+            start: "center center",
+            end: () => `+=${totalDuration * 60}vh`,
+            pin: true,
+            scrub: 1,
+            // markers: true
+        }
+    });
 
     // Create animations for each slide
-    scrollItems.forEach((item, index) => {
-        const nextItem = scrollItems[index + 1];
-        const caption = item.querySelector('.textbox');
-        const startTime = index * sectionDuration;
-        const imageHeight = item.offsetHeight;
-        const nextCaption = nextItem?.querySelector('.textbox');
+    let currentTime = 0;  // Keep track of timeline position
 
-        // Final position for caption (verticalOffset pixels from top)
+    scrollItems.forEach((item, index) => {
+        const isLastSlide = index === scrollItems.length - 1;
+        const nextItem = scrollItems[index + 1];
+        const caption = item.querySelector('.caption.textbox');
+        const source = item.querySelector('.source.textbox');
+        const imageHeight = item.offsetHeight;
+
+        // Get next slide's elements
+        const nextCaption = nextItem?.querySelector('.caption.textbox');
+        const nextSource = nextItem?.querySelector('.source.textbox');
+
+        // Calculate section duration based on whether it has a source
+        const sectionDuration = source ?
+            baseSectionDuration + sourceDuration + (isLastSlide ? lastSlideExtraDuration : 0) :
+            baseSectionDuration;
+
+        // Calculate timing segments
+        const captionScrollDuration = baseSectionDuration - (2 * crossfadeDuration);
         const endY = (-imageHeight / 2) + verticalOffset;
 
-        // Animation sequence for the first slide:
-        // 1. Caption fades in
-        // 2. Caption moves up
-        // 3. Caption and image fade out (handled in next iteration)
         if (index === 0) {
-            tl.to(caption, {
-                opacity: 1,
-                duration: crossfadeDuration,
-                ease: "power1.inOut"
-            }, startTime)
-            .to(caption, {
-                y: endY,
-                duration: sectionDuration - (2 * crossfadeDuration),
-                ease: "power1.inOut"
-            }, startTime + crossfadeDuration);
+            // First slide animation
+            if (caption) {
+                tl.to(caption, {
+                    opacity: 1,
+                    duration: crossfadeDuration,
+                    ease: "power1.inOut"
+                }, currentTime)
+                .to(caption, {
+                    y: endY,
+                    duration: captionScrollDuration,
+                    ease: "power1.inOut"
+                }, currentTime + crossfadeDuration);
+
+                if (source) {
+                    const sourceStartTime = currentTime + crossfadeDuration + captionScrollDuration + pauseBeforeSource;
+                    // Crossfade from caption to source after pause
+                    tl.to(caption, {
+                        opacity: 0,
+                        duration: crossfadeDuration,
+                        ease: "power1.inOut"
+                    }, sourceStartTime)
+                    .to(source, {
+                        opacity: 1,
+                        duration: crossfadeDuration,
+                        ease: "power1.inOut"
+                    }, sourceStartTime);
+                }
+            }
         }
 
-        // Animation sequence for subsequent slides:
-        // 1. Previous slide and its caption fade out
-        // 2. Current slide and its caption fade in simultaneously
-        // 3. Caption moves up while staying fully visible
-        // 4. At the end, both fade out (handled in next iteration)
         if (nextItem) {
-            // Calculate when this slide should start transitioning to the next
-            const transitionTime = startTime + sectionDuration - crossfadeDuration;
+            const transitionTime = currentTime + sectionDuration - crossfadeDuration;
 
-            // Fade out current slide and its caption
-            tl.to([item, caption], {
+            // Fade out current slide and its texts
+            const fadeOutElements = [item];
+            if (caption) fadeOutElements.push(caption);
+            if (source) fadeOutElements.push(source);
+
+            tl.to(fadeOutElements, {
                 opacity: 0,
                 duration: crossfadeDuration,
                 ease: "power1.inOut"
             }, transitionTime);
 
-            // Simultaneously fade in next slide and its caption
-            tl.to([nextItem, nextCaption], {
+            // Fade in next slide
+            tl.to(nextItem, {
                 opacity: 1,
                 duration: crossfadeDuration,
                 ease: "power1.inOut"
             }, transitionTime);
 
-            // Move the caption up after it's fully visible
+            // Animate next slide's caption
             if (nextCaption) {
                 tl.to(nextCaption, {
+                    opacity: 1,
+                    duration: crossfadeDuration,
+                    ease: "power1.inOut"
+                }, transitionTime)
+                .to(nextCaption, {
                     y: endY,
-                    duration: sectionDuration - (2 * crossfadeDuration),
+                    duration: captionScrollDuration,
                     ease: "power1.inOut"
                 }, transitionTime + crossfadeDuration);
+
+                // If next slide has source, handle caption to source crossfade
+                if (nextSource) {
+                    const nextSourceStartTime = transitionTime + crossfadeDuration + captionScrollDuration + pauseBeforeSource;
+                    tl.to(nextCaption, {
+                        opacity: 0,
+                        duration: crossfadeDuration,
+                        ease: "power1.inOut"
+                    }, nextSourceStartTime)
+                    .to(nextSource, {
+                        opacity: 1,
+                        duration: crossfadeDuration,
+                        ease: "power1.inOut"
+                    }, nextSourceStartTime);
+                }
             }
         }
+
+        // Update timeline position
+        currentTime += sectionDuration;
     });
 });
