@@ -12,7 +12,7 @@ window.addEventListener('load', () => {
     // All captions start hidden and positioned verticalOffset pixels from bottom
     scrollItems.forEach((item, i) => {
         gsap.set(item, { opacity: i === 0 ? 1 : 0 });
-        const caption = item.querySelector('.caption');
+        const caption = item.querySelector('.textbox');
         const imageHeight = item.offsetHeight;
         gsap.set(caption, {
             opacity: 0,
@@ -41,10 +41,10 @@ window.addEventListener('load', () => {
     // Create animations for each slide
     scrollItems.forEach((item, index) => {
         const nextItem = scrollItems[index + 1];
-        const caption = item.querySelector('.caption');
+        const caption = item.querySelector('.textbox');
         const startTime = index * sectionDuration;
         const imageHeight = item.offsetHeight;
-        const nextCaption = nextItem?.querySelector('.caption');
+        const nextCaption = nextItem?.querySelector('.textbox');
 
         // Final position for caption (verticalOffset pixels from top)
         const endY = (-imageHeight / 2) + verticalOffset;

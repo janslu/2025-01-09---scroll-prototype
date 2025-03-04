@@ -131,7 +131,7 @@ p {
 }
 
 /* Caption styles */
-p.caption {
+.textbox {
     position: absolute;
     background-color: rgb(255 255 255);
     color: black;
@@ -143,25 +143,25 @@ p.caption {
     line-height: 1.7;
     letter-spacing: 0.015em;
 }
-p.caption span.caption-header {
+.textbox span.caption-header {
     display: block;
     font-weight: 600;
 }
 
 @media (max-width: 768px) {
-    .caption {
+    .textbox {
         max-width: 80%;
         font-size: 1rem;
     }
 }
 
 /* Caption positioning based on data attributes */
-[data-caption-position="left"] .caption {
+[data-textbox-position="left"] .textbox {
     top: 50%;
     left: 1.5rem;
 }
 
-[data-caption-position="right"] .caption {
+[data-textbox-position="right"] .textbox {
     top: 50%;
     right: 1.5rem;
     text-align: right;
