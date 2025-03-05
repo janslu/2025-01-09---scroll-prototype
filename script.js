@@ -37,11 +37,11 @@ window.addEventListener('load', () => {
     });
 
     // Animation timing constants
-    const baseSectionDuration = 10;     // Base duration for each slide
-    const crossfadeDuration = 3;        // Duration of fade in/out transitions
-    const sourceDuration = 5;           // How long source text stays visible
-    const pauseBeforeSource = 1;        // Duration to pause before showing source
-    const lastSlideExtraDuration = 3;   // Extra time for the last slide's source
+    const baseSectionDuration = 90;     // Base duration for each slide (was 10)
+    const crossfadeDuration = 9;        // Duration of fade in/out transitions (was 3)
+    const sourceDuration = 30;          // How long source text stays visible (was 5)
+    const pauseBeforeSource = 3;        // Duration to pause before showing source (was 1)
+    const lastSlideExtraDuration = 30;   // Extra time for the last slide's source (was 3)
 
     // Calculate total timeline length considering additional time for slides with sources
     const totalDuration = scrollItems.reduce((total, item, index) => {
@@ -57,9 +57,9 @@ window.addEventListener('load', () => {
         scrollTrigger: {
             trigger: container,
             start: "center center",
-            end: () => `+=${totalDuration * 60}vh`,
+            end: () => `+=${totalDuration * 20}vh`,  // Adjusted from 60 to 20 to compensate for longer durations
             pin: true,
-            scrub: 1,
+            scrub: 3,  // Increased scrub value for smoother scrolling (was 1)
             // markers: true
         }
     });
